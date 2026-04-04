@@ -3,6 +3,10 @@ import mongoose from "mongoose";
 
 import Restaurant from "../models/restaurant.model";
 
+const isValidObjectId = (id: string): boolean => {
+  return mongoose.Types.ObjectId.isValid(id);
+};
+
 const createRestaurant = async (req: Request, res: Response): Promise<void> => {
   const { name, cuisine, address, city, rating, menu, averageRating } =
     req.body;
@@ -126,7 +130,7 @@ const updateRestaurant = async (
   const { restaurantId } = req.params;
   const updateData = req.body;
 
-  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+  if (!isValidObjectId(restaurantId)) {
     res.status(400).json({
       status: "failed",
       message: "Invalid restaurant ID format",
@@ -172,7 +176,7 @@ const deleteRestaurant = async (
 ): Promise<void> => {
   const { restaurantId } = req.params;
 
-  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+  if (!isValidObjectId(restaurantId)) {
     res.status(400).json({
       status: "failed",
       message: "Invalid restaurant ID",
@@ -284,6 +288,53 @@ const filterRestaurantsByRating = async (
   }
 };
 
+const addDishToMenu = async (
+  req: Request<{ restaurantId: string }, {}, {}>,
+  res: Response,
+) => {
+  const { restaurantId } = req.params;
+  const dishData = req.body;
+
+  if (!isValidObjectId(restaurantId)) {
+    res.status(400).json({
+      status: "failed",
+      message: "Invalid restaurant ID",
+    });
+    return;
+  }
+  try {
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
+      restaurantId,
+      {
+        $push: {
+          menu: dishData,
+        },
+      },
+      { returnDocument: "after", runValidators: true },
+    );
+
+    if (!updatedRestaurant) {
+      res.status(404).json({
+        status: "failed",
+        message: "Restaurant not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Dish added to menu",
+      data: updatedRestaurant,
+    });
+  } catch (error) {
+    console.error("Error adding dish to menu:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Failed to add dish to menu",
+    });
+  }
+};
+
 export {
   createRestaurant,
   readAllRestaurants,
@@ -292,4 +343,5 @@ export {
   deleteRestaurant,
   searchRestaurantsByLocation,
   filterRestaurantsByRating,
+  addDishToMenu,
 };

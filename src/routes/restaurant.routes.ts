@@ -1,5 +1,6 @@
 import { Router } from "express";
 import {
+  addDishToMenu,
   createRestaurant,
   deleteRestaurant,
   filterRestaurantsByRating,
@@ -24,6 +25,8 @@ router.get("/rating/:rating", filterRestaurantsByRating)
 router.put("/:restaurantId", updateRestaurant);
 
 router.delete("/:restaurantId", deleteRestaurant);
+
+router.post("/:restaurantId/menu", addDishToMenu);
 
 
 
