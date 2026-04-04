@@ -54,8 +54,11 @@ const createRestaurant = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-const readAllRestaurants = async (req: Request, res: Response): Promise<void> => {
-    try {
+const readAllRestaurants = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  try {
     const allRestaurants = await Restaurant.find();
     if (allRestaurants.length === 0) {
       res.status(404).json({
@@ -77,20 +80,21 @@ const readAllRestaurants = async (req: Request, res: Response): Promise<void> =>
       message: "failed to fetch all restaurants",
     });
   }
-}
+};
 
-const readRestaurantsByCuisine = async (req: Request, res: Response): Promise<void> => {
+const readRestaurantsByCuisine = async (
+  req: Request,
+  res: Response,
+): Promise<void> => {
+  const { cuisineType } = req.params;
 
-  const {cuisineType} = req.params;
-
-    if (!cuisineType) {
-      res.status(400).json({
-        status: "failed",
-        message: "Cuisine type is required",
-      });
-      return;
-    }
-
+  if (!cuisineType) {
+    res.status(400).json({
+      status: "failed",
+      message: "Cuisine type is required",
+    });
+    return;
+  }
 
   try {
     const restaurants = await Restaurant.find({ cuisine: cuisineType });
@@ -113,21 +117,24 @@ const readRestaurantsByCuisine = async (req: Request, res: Response): Promise<vo
       message: "Failed to get restaurants by cuisine",
     });
   }
-}
+};
 
-const updateRestaurant = async (req: Request<{ restaurantId: string }, {}, {}>, res: Response): Promise<void> => {
-   const { restaurantId } = req.params;
-   const updateData = req.body;
+const updateRestaurant = async (
+  req: Request<{ restaurantId: string }, {}, {}>,
+  res: Response,
+): Promise<void> => {
+  const { restaurantId } = req.params;
+  const updateData = req.body;
 
-   if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
-     res.status(400).json({
-       status: "failed",
-       message: "Invalid restaurant ID format",
-     });
-     return;
-   }
+  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+    res.status(400).json({
+      status: "failed",
+      message: "Invalid restaurant ID format",
+    });
+    return;
+  }
 
-   try {
+  try {
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
       restaurantId,
       updateData,
@@ -157,7 +164,50 @@ const updateRestaurant = async (req: Request<{ restaurantId: string }, {}, {}>, 
       message: "failed to update the restaurant data",
     });
   }
+};
 
-}
+const deleteRestaurant = async (
+  req: Request<{ restaurantId: string }>,
+  res: Response,
+): Promise<void> => {
+  const { restaurantId } = req.params;
 
-export { createRestaurant, readAllRestaurants, readRestaurantsByCuisine, updateRestaurant };
+  if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+    res.status(400).json({
+      status: "failed",
+      message: "Invalid restaurant ID",
+    });
+    return;
+  }
+
+  try {
+    const deletedRestaurant = await Restaurant.findByIdAndDelete(restaurantId);
+
+    if (!deletedRestaurant) {
+      res.status(404).json({
+        status: "failed",
+        message: "Restaurant not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Restaurant deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting the restaurant", error);
+    res.status(500).json({
+      status: "failed",
+      message: "failed to delete the restaurant",
+    });
+  }
+};
+
+export {
+  createRestaurant,
+  readAllRestaurants,
+  readRestaurantsByCuisine,
+  updateRestaurant,
+  deleteRestaurant,
+};

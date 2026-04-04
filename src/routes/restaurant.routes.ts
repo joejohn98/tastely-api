@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { createRestaurant, readAllRestaurants, readRestaurantsByCuisine, updateRestaurant } from "../controllers/restaurant.controller";
+import { createRestaurant, deleteRestaurant, readAllRestaurants, readRestaurantsByCuisine, updateRestaurant } from "../controllers/restaurant.controller";
 
 const router = Router();
 
@@ -10,5 +10,7 @@ router.get("/", readAllRestaurants);
 router.get("/cuisine/:cuisineType", readRestaurantsByCuisine);
 
 router.put("/:restaurantId", updateRestaurant);
+
+router.delete("/:restaurantId", deleteRestaurant);
 
 export default router;
