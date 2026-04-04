@@ -1,4 +1,6 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
+
 import Restaurant from "../models/restaurant.model";
 
 const createRestaurant = async (req: Request, res: Response): Promise<void> => {
@@ -113,4 +115,49 @@ const readRestaurantsByCuisine = async (req: Request, res: Response): Promise<vo
   }
 }
 
-export { createRestaurant, readAllRestaurants, readRestaurantsByCuisine };
+const updateRestaurant = async (req: Request<{ restaurantId: string }, {}, {}>, res: Response): Promise<void> => {
+   const { restaurantId } = req.params;
+   const updateData = req.body;
+
+   if (!mongoose.Types.ObjectId.isValid(restaurantId)) {
+     res.status(400).json({
+       status: "failed",
+       message: "Invalid restaurant ID format",
+     });
+     return;
+   }
+
+   try {
+    const updatedRestaurant = await Restaurant.findByIdAndUpdate(
+      restaurantId,
+      updateData,
+      {
+        returnDocument: "after",
+        runValidators: true,
+      },
+    ).select("-__v");
+
+    if (!updatedRestaurant) {
+      res.status(404).json({
+        status: "failed",
+        message: "Restaurant not found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      message: "Restaurant updated successfully",
+      data: updatedRestaurant,
+    });
+  } catch (error) {
+    console.error("Error updating the restaurant", error);
+    res.status(500).json({
+      status: "failed",
+      message: "failed to update the restaurant data",
+    });
+  }
+
+}
+
+export { createRestaurant, readAllRestaurants, readRestaurantsByCuisine, updateRestaurant };
