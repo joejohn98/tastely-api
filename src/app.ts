@@ -3,6 +3,7 @@ import cors from "cors";
 import morgan from "morgan";
 
 import restaurantRoutes from "./routes/restaurant.routes";
+import authRoutes from "./routes/auth.routes";
 
 const app = express();
 
@@ -19,5 +20,8 @@ app.get("/", (req: Request, res: Response) => {
 
 // restaurant route
 app.use("/api/restaurants", restaurantRoutes);
+
+// auth route
+app.use("/api/auth", authRoutes);
 
 export default app;
