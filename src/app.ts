@@ -7,11 +7,7 @@ import restaurantRoutes from "./routes/restaurant.routes";
 const app = express();
 
 app.use(cors());
-app.use(
-  morgan("dev", {
-    stream: process.stdout,
-  }),
-);
+app.use(morgan("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 

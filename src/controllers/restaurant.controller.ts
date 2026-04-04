@@ -52,4 +52,30 @@ const createRestaurant = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-export { createRestaurant };
+const readAllRestaurants = async (req: Request, res: Response): Promise<void> => {
+    try {
+    const allRestaurants = await Restaurant.find();
+    if (allRestaurants.length === 0) {
+      res.status(404).json({
+        status: "fail",
+        message: "No restaurants found",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      results: allRestaurants.length,
+      data: allRestaurants,
+    });
+  } catch (error) {
+    console.error("error getting all restaurants", error);
+    res.status(500).json({
+      status: "failed",
+      message: "failed to fetch all restaurants",
+    });
+  }
+
+}
+
+export { createRestaurant, readAllRestaurants };
