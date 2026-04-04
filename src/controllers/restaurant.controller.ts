@@ -204,10 +204,52 @@ const deleteRestaurant = async (
   }
 };
 
+const searchRestaurantsByLocation = async (
+  req: Request<{ location?: string }>,
+  res: Response,
+): Promise<void> => {
+  let location = req.query.location as string;
+
+  if (Array.isArray(location)) {
+    location = location[0]; // Take the first value if multiple location parameters are provided
+  }
+
+  if (!location) {
+    res.status(400).json({
+      status: "failed",
+      message: "Location query parameter is required",
+    });
+    return;
+  }
+
+  try {
+    const restaurants = await Restaurant.find({ city: location });
+    if (restaurants.length === 0) {
+      res.status(404).json({
+        status: "failed",
+        message: "No restaurants found for this location",
+      });
+      return;
+    }
+    res.status(200).json({
+      status: "success",
+      results: restaurants.length,
+      data: restaurants,
+    });
+  } catch (error) {
+    console.error("Error searching restaurants by location:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Failed to search restaurants by location",
+    });
+  }
+};
+
 export {
   createRestaurant,
   readAllRestaurants,
   readRestaurantsByCuisine,
   updateRestaurant,
   deleteRestaurant,
+  searchRestaurantsByLocation
 };
