@@ -245,11 +245,51 @@ const searchRestaurantsByLocation = async (
   }
 };
 
+const filterRestaurantsByRating = async (
+  req: Request<{ rating: string }>,
+  res: Response,
+) => {
+  const rating = parseFloat(req.params.rating);
+
+  if (isNaN(rating) || rating < 0 || rating > 5) {
+    res.status(400).json({
+      status: "failed",
+      message: "Invalid rating value. Rating must be a number between 0 and 5.",
+    });
+    return;
+  }
+
+  try {
+    const restaurants = await Restaurant.find({
+      rating: { $gte: rating },
+    }).select("-__v");
+    if (restaurants.length === 0) {
+      res.status(404).json({
+        status: "failed",
+        message: "No restaurants found with the specified rating",
+      });
+      return;
+    }
+    res.status(200).json({
+      status: "success",
+      results: restaurants.length,
+      data: restaurants,
+    });
+  } catch (error) {
+    console.error("Error filtering restaurants by rating:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Failed to filter restaurants by rating",
+    });
+  }
+};
+
 export {
   createRestaurant,
   readAllRestaurants,
   readRestaurantsByCuisine,
   updateRestaurant,
   deleteRestaurant,
-  searchRestaurantsByLocation
+  searchRestaurantsByLocation,
+  filterRestaurantsByRating,
 };
