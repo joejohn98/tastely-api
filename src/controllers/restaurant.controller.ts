@@ -75,7 +75,42 @@ const readAllRestaurants = async (req: Request, res: Response): Promise<void> =>
       message: "failed to fetch all restaurants",
     });
   }
-
 }
 
-export { createRestaurant, readAllRestaurants };
+const readRestaurantsByCuisine = async (req: Request, res: Response): Promise<void> => {
+
+  const {cuisineType} = req.params;
+
+    if (!cuisineType) {
+      res.status(400).json({
+        status: "failed",
+        message: "Cuisine type is required",
+      });
+      return;
+    }
+
+
+  try {
+    const restaurants = await Restaurant.find({ cuisine: cuisineType });
+    if (restaurants.length === 0) {
+      res.status(404).json({
+        status: "failed",
+        message: "No restaurants found for this cuisine",
+      });
+      return;
+    }
+    res.status(200).json({
+      status: "success",
+      results: restaurants.length,
+      data: restaurants,
+    });
+  } catch (error) {
+    console.error("Error reading restaurants by cuisine:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Failed to get restaurants by cuisine",
+    });
+  }
+}
+
+export { createRestaurant, readAllRestaurants, readRestaurantsByCuisine };
