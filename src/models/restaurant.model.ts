@@ -54,6 +54,25 @@ const restaurantSchema = new mongoose.Schema(
       max: 5,
       default: 0,
     },
+    reviews: [
+      {
+        userId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        rating: {
+          type: Number,
+          required: [true, "Rating is required"],
+          min: 0,
+          max: 5,
+        },
+        reviewText: {
+          type: String,
+          trim: true,
+          maxLength: [300, "Review cannot exceed 300 characters"],
+        },
+      },
+    ],
   },
   {
     timestamps: true,
