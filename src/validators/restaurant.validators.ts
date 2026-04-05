@@ -61,6 +61,10 @@ const restaurantReviewSchema = z.object({
     .max(500, "Review text cannot exceed 500 characters"),
 });
 
+export const restaurantNameParamSchema = z.object({
+  name: z.string().trim().min(1, "Restaurant name is required in path"),
+});
+
 export const cuisineTypeParamSchema = z.object({
   cuisineType: z.string().trim().min(1, "Cuisine type is required in path"),
 });

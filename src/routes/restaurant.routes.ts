@@ -11,6 +11,7 @@ import {
   updateRestaurant,
   addRestaurantReviewAndRating,
   getUserReviewsForRestaurant,
+  readRestaurant,
 } from "../controllers/restaurant.controller";
 
 import verify from "../middleware/verify.middleware";
@@ -30,17 +31,21 @@ router.get("/cuisine/:cuisineType", readRestaurantsByCuisine);
 
 router.get("/rating/:rating", filterRestaurantsByRating);
 
+
 router.put("/:restaurantId", verify, authorizeRoles("admin"), updateRestaurant);
 
 router.delete("/:restaurantId", verify,
   authorizeRoles("admin"), deleteRestaurant);
-
+  
   router.post("/:restaurantId/review", verify, addRestaurantReviewAndRating);
-
-router.get("/:restaurantId/reviews", verify, getUserReviewsForRestaurant);
-
-router.post("/:restaurantId/menu", addDishToMenu);
-
-router.delete("/:restaurantId/menu/:dishName", removeDishFromMenu);
-
-export default router;
+  
+  router.get("/:restaurantId/reviews", verify, getUserReviewsForRestaurant);
+  
+  router.post("/:restaurantId/menu", addDishToMenu);
+  
+  router.delete("/:restaurantId/menu/:dishName", removeDishFromMenu);
+  
+  router.get("/:name", readRestaurant);
+  
+  export default router;
+  

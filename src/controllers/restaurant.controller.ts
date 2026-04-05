@@ -11,6 +11,7 @@ import {
   menuItemSchema,
   ratingParamSchema,
   removeDishFromMenuParamsSchema,
+  restaurantNameParamSchema,
   RestaurantReviewInput,
   restaurantReviewSchema,
   UpdateRestaurantInput,
@@ -65,6 +66,47 @@ const createRestaurant = async (
     res.status(500).json({
       status: "failed",
       message: "Failed to create restaurant",
+    });
+  }
+};
+
+const readRestaurant = async (
+  req: Request<{ name: string }>,
+  res: Response,
+): Promise<void> => {
+
+  const parsedParams = restaurantNameParamSchema.safeParse(req.params);
+  
+  if (!parsedParams.success) {
+    res.status(400).json({
+      status: "failed",
+      message:
+        parsedParams.error.issues[0]?.message ||
+        "Restaurant name is required !",
+    });
+    return;
+  }
+
+  const { name } = parsedParams.data;
+
+  try {
+    const restaurant = await Restaurant.findOne({ name });
+    if (!restaurant) {
+      res.status(404).json({
+        status: "failed",
+        message: "Restaurant not found",
+      });
+      return;
+    }
+    res.status(200).json({
+      status: "success",
+      data: restaurant,
+    });
+  } catch (error) {
+    console.error("Error reading restaurant:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Failed to get restaurant",
     });
   }
 };
@@ -597,6 +639,7 @@ const getUserReviewsForRestaurant = async (
 
 export {
   createRestaurant,
+  readRestaurant,
   readAllRestaurants,
   readRestaurantsByCuisine,
   updateRestaurant,
