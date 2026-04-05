@@ -49,6 +49,14 @@ const updateRestaurantSchema = z.object({
     .optional(),
 });
 
+export const cuisineTypeParamSchema = z.object({
+  cuisineType: z.string().trim().min(1, "Cuisine type is required in path"),
+});
+
+export const ratingParamSchema = z.object({
+  rating: z.coerce.number("Rating must be a number").min(0).max(5),
+});
+
 export const removeDishFromMenuParamsSchema = z.object({
   dishName: z.string().trim().min(1, "Dish name is required in path"),
 });

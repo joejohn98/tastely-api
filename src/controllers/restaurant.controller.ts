@@ -6,8 +6,10 @@ import Restaurant from "../models/restaurant.model";
 import {
   CreateRestaurantInput,
   createRestaurantSchema,
+  cuisineTypeParamSchema,
   MenuItemInput,
   menuItemSchema,
+  ratingParamSchema,
   removeDishFromMenuParamsSchema,
   UpdateRestaurantInput,
   updateRestaurantSchema,
@@ -94,18 +96,21 @@ const readAllRestaurants = async (
 };
 
 const readRestaurantsByCuisine = async (
-  req: Request,
+  req: Request<{ cuisineType: string }, {}, {}>,
   res: Response,
 ): Promise<void> => {
-  const { cuisineType } = req.params;
 
-  if (!cuisineType) {
+  const parsedParams = cuisineTypeParamSchema.safeParse(req.params);
+
+  if (!parsedParams.success) {
     res.status(400).json({
-      status: "failed",
-      message: "Cuisine type is required",
+      message:
+        parsedParams.error.issues[0]?.message || "Cuisine is required in path",
     });
     return;
   }
+
+  const { cuisineType } = parsedParams.data;
 
   try {
     const restaurants = await Restaurant.find({ cuisine: cuisineType });
@@ -280,20 +285,24 @@ const filterRestaurantsByRating = async (
   req: Request<{ rating: string }>,
   res: Response,
 ) => {
-  const rating = parseFloat(req.params.rating);
+  
+ const parsed = ratingParamSchema.safeParse(req.params);
 
-  if (isNaN(rating) || rating < 0 || rating > 5) {
+  if (!parsed.success) {
     res.status(400).json({
       status: "failed",
-      message: "Invalid rating value. Rating must be a number between 0 and 5.",
+      message: parsed.error.issues[0]?.message || "Invalid rating value",
     });
     return;
   }
+
+  const { rating } = parsed.data;
 
   try {
     const restaurants = await Restaurant.find({
       rating: { $gte: rating },
     }).select("-__v");
+
     if (restaurants.length === 0) {
       res.status(404).json({
         status: "failed",
