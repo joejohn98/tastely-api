@@ -1,7 +1,14 @@
 import { Request, Response } from "express";
+import mongoose from "mongoose";
+
+
 import bcrypt from "bcryptjs";
 import User from "../models/user.model";
 import generateToken from "../utils/generateToken";
+
+const isValidObjectId = (id: string): boolean => {
+  return mongoose.Types.ObjectId.isValid(id);
+}
 
 const register = async (req: Request, res: Response): Promise<void> => {
   const { firstName, lastName, email, password } = req.body;
@@ -124,4 +131,48 @@ const logout = (req: Request, res: Response): void => {
   }
 };
 
-export { register, login, logout };
+const updateUserRole = async (req: Request<{ userId: string }>, res: Response): Promise<void> => {
+  const { userId } = req.params;
+
+  const { role } = req.body;
+
+  if (!isValidObjectId(userId)) {
+    res.status(400).json({
+      status: "failed",
+      error: "Invalid user ID"
+    });
+    return;
+  }
+
+  try {
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { role: role },
+      { returnDocument: "after", runValidators: true },
+    );
+
+    if (!updatedUser) {
+      res.status(404).json({
+        status: "failed",
+        error: "User not found",
+      });
+      return;
+    }
+
+    const { password: _, __v, ...userData } = updatedUser.toObject();
+
+    res.status(200).json({
+      status: "success",
+      message: "User role updated successfully",
+      data: userData,
+    });
+  } catch (error) {
+    console.log("error updating user role", error);
+    res.status(500).json({
+      status: "failed",
+      error: "Internal server error, failed to update role",
+    });
+  }
+}
+
+export { register, login, logout, updateUserRole };

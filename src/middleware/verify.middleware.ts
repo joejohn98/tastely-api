@@ -2,16 +2,18 @@ import jwt from "jsonwebtoken";
 import { Request, Response, NextFunction } from "express";
 
 import User from "../models/user.model";
+import { config } from "../config/config";
 
 const verify = async (
   req: Request,
   res: Response,
   next: NextFunction,
 ): Promise<void> => {
+
   // Get token from header or cookie
   const authHeader = req.headers.authorization;
 
-  const JWT_SECRET = process.env.JWT_SECRET;
+  const JWT_SECRET = config.jwtSecret;
 
   let token: string | undefined;
 
@@ -23,6 +25,8 @@ const verify = async (
   } else if (req.cookies?.token) {
     token = req.cookies.token;
   }
+
+  console.log("Token extracted in middleware:", req.cookies?.token);
 
   if (!token) {
     res.status(401).json({

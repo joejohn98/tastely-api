@@ -1,11 +1,14 @@
 import jwt from "jsonwebtoken";
 import { Response } from "express";
 
+import { config } from "../config/config";
+
+
 const generateToken = (userId: string, res: Response): string => {
   const payload = { id: userId };
 
-  const JWT_SECRET = process.env.JWT_SECRET;
-  const JWT_EXPIRATION = process.env.JWT_EXPIRATION;
+  const JWT_SECRET = config.jwtSecret;
+  const JWT_EXPIRATION = config.jwtExpiration;
 
   if (!JWT_SECRET) {
     console.error("FATAL ERROR: JWT_SECRET is not defined.");
