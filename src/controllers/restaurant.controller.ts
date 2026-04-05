@@ -11,6 +11,8 @@ import {
   menuItemSchema,
   ratingParamSchema,
   removeDishFromMenuParamsSchema,
+  RestaurantReviewInput,
+  restaurantReviewSchema,
   UpdateRestaurantInput,
   updateRestaurantSchema,
 } from "../validators/restaurant.validators";
@@ -459,6 +461,140 @@ const removeDishFromMenu = async (
   }
 };
 
+const addRestaurantReviewAndRating = async (
+  req: Request<{ restaurantId: string }, {}, RestaurantReviewInput>,
+  res: Response,
+) => {
+  const userId = req.user?._id;
+  const { restaurantId } = req.params;
+
+  if (!isValidObjectId(restaurantId)) {
+    res.status(400).json({
+      status: "failed",
+      message: "Invalid restaurant ID",
+    });
+    return;
+  }
+  const parsed = restaurantReviewSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    res.status(400).json({
+      status: "failed", 
+      message: parsed.error.issues[0]?.message || "Validation failed",
+      errors: z.flattenError(parsed.error).fieldErrors,
+    });
+    return;
+  }
+  const { rating, reviewText } = parsed.data;
+
+  try {
+    const restaurant = await Restaurant.findById(restaurantId);
+
+    if (!restaurant) {
+      res.status(404).json({
+        status: "fail",
+        message: "Restaurant not found",
+      });
+      return;
+    }
+
+    // Check if the user has already reviewed the restaurant
+    const existingReviewIndex = restaurant.reviews.findIndex(
+      (review) => review.userId?.toString() === userId?.toString(),
+    );
+
+    if (existingReviewIndex !== -1) {
+      // Update existing review
+      const existingReview = restaurant.reviews[existingReviewIndex];
+      if (existingReview) {
+        existingReview.rating = rating;
+        existingReview.reviewText = reviewText;
+      }
+    } else {
+      // Add new review
+      restaurant.reviews.push({
+        userId: userId!,
+        rating,
+        reviewText,
+      });
+    }
+    // Calculate and update the average rating
+    const totalRatings = restaurant.reviews.length;
+    const totalRatingValue = restaurant.reviews.reduce(
+      (sum, review) => sum + review.rating,
+      0,
+    );
+    const averageRating = totalRatingValue / totalRatings;
+    restaurant.averageRating = averageRating;
+
+    await restaurant.save();
+
+    res.status(200).json({
+      status: "success",
+      message: "Review and rating added successfully",
+      data: restaurant,
+    });
+  } catch (error) {
+    console.error("Error adding review and rating:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Failed to add review and rating",
+    });
+  }
+}
+
+const getUserReviewsForRestaurant = async (
+  req: Request<{ restaurantId: string }>,
+  res: Response,
+) => {
+  const userId = req.user?._id;
+  const { restaurantId } = req.params;
+
+  if (!isValidObjectId(restaurantId)) {
+    res.status(400).json({
+      status: "failed",
+      message: "Invalid restaurant ID",
+    });
+    return;
+  }
+
+  try {
+    const restaurant = await Restaurant.findById(restaurantId);
+
+    if (!restaurant) {
+      res.status(404).json({
+        status: "failed",
+        message: "Restaurant not found",
+      });
+      return;
+    }
+
+    const userReview = restaurant.reviews.find(
+      (review) => review.userId?.toString() === userId?.toString(),
+    );
+
+    if (!userReview) {
+      res.status(404).json({
+        status: "failed",
+        message: "User review not found for this restaurant",
+      });
+      return;
+    }
+
+    res.status(200).json({
+      status: "success",
+      data: userReview,
+    });
+  } catch (error) {
+    console.error("Error fetching user review for restaurant:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Failed to fetch user review for restaurant",
+    });
+  }
+}
+
+
 export {
   createRestaurant,
   readAllRestaurants,
@@ -469,4 +605,6 @@ export {
   filterRestaurantsByRating,
   addDishToMenu,
   removeDishFromMenu,
+  addRestaurantReviewAndRating,
+  getUserReviewsForRestaurant,
 };

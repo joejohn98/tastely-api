@@ -49,6 +49,18 @@ const updateRestaurantSchema = z.object({
     .optional(),
 });
 
+const restaurantReviewSchema = z.object({
+  rating: z.coerce
+    .number("Rating must be a number")
+    .min(0, "Rating must be between 0 and 5")
+    .max(5, "Rating must be between 0 and 5"),
+  reviewText: z
+    .string()
+    .trim()
+    .min(1, "Review text is required")
+    .max(500, "Review text cannot exceed 500 characters"),
+});
+
 export const cuisineTypeParamSchema = z.object({
   cuisineType: z.string().trim().min(1, "Cuisine type is required in path"),
 });
@@ -63,5 +75,11 @@ export const removeDishFromMenuParamsSchema = z.object({
 
 export type CreateRestaurantInput = z.infer<typeof createRestaurantSchema>;
 export type UpdateRestaurantInput = z.infer<typeof updateRestaurantSchema>;
+export type RestaurantReviewInput = z.infer<typeof restaurantReviewSchema>;
 export type MenuItemInput = z.infer<typeof menuItemSchema>;
-export { createRestaurantSchema, updateRestaurantSchema, menuItemSchema };
+export {
+  createRestaurantSchema,
+  updateRestaurantSchema,
+  restaurantReviewSchema,
+  menuItemSchema,
+};

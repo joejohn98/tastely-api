@@ -9,6 +9,8 @@ import {
   readRestaurantsByCuisine,
   searchRestaurantsByLocation,
   updateRestaurant,
+  addRestaurantReviewAndRating,
+  getUserReviewsForRestaurant,
 } from "../controllers/restaurant.controller";
 
 import verify from "../middleware/verify.middleware";
@@ -32,6 +34,10 @@ router.put("/:restaurantId", verify, authorizeRoles("admin"), updateRestaurant);
 
 router.delete("/:restaurantId", verify,
   authorizeRoles("admin"), deleteRestaurant);
+
+  router.post("/:restaurantId/review", verify, addRestaurantReviewAndRating);
+
+router.get("/:restaurantId/reviews", verify, getUserReviewsForRestaurant);
 
 router.post("/:restaurantId/menu", addDishToMenu);
 
