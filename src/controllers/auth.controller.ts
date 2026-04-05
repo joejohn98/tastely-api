@@ -1,24 +1,37 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-
+import z from "zod";
 
 import bcrypt from "bcryptjs";
 import User from "../models/user.model";
 import generateToken from "../utils/generateToken";
+import {
+  LoginInput,
+  loginUserSchema,
+  RegisterInput,
+  registerUserSchema,
+} from "../validators/auth.validators";
 
 const isValidObjectId = (id: string): boolean => {
   return mongoose.Types.ObjectId.isValid(id);
-}
+};
 
-const register = async (req: Request, res: Response): Promise<void> => {
-  const { firstName, lastName, email, password } = req.body;
+const register = async (
+  req: Request<RegisterInput>,
+  res: Response,
+): Promise<void> => {
 
-  if (!firstName || !lastName || !email || !password) {
+  const parsed = registerUserSchema.safeParse(req.body);
+
+  if (!parsed.success) {
     res.status(400).json({
-      message: "All fields are required",
+      message: parsed.error.issues[0]?.message || "Validation failed",
+      errors: z.flattenError(parsed.error).fieldErrors,
     });
     return;
   }
+
+  const { firstName, lastName, email, password } = parsed.data;
 
   try {
     const existingUser = await User.findOne({ email });
@@ -58,16 +71,23 @@ const register = async (req: Request, res: Response): Promise<void> => {
   }
 };
 
-const login = async (req: Request, res: Response): Promise<void> => {
-  const { email, password } = req.body;
+const login = async (
+  req: Request<LoginInput>,
+  res: Response,
+): Promise<void> => {
+  const validate = loginUserSchema.safeParse(req.body);
 
-  if (!email || !password) {
+  if (!validate.success) {
     res.status(400).json({
-      message: "All fields are required",
+      status: "failed",
+      error: validate.error?.issues[0]?.message || "Invalid input",
+      errors: z.flattenError(validate.error).fieldErrors,
     });
     return;
   }
 
+  const { email, password } = validate.data;
+  
   try {
     const existingUser = await User.findOne({ email }).select("+password");
 
@@ -131,7 +151,10 @@ const logout = (req: Request, res: Response): void => {
   }
 };
 
-const updateUserRole = async (req: Request<{ userId: string }>, res: Response): Promise<void> => {
+const updateUserRole = async (
+  req: Request<{ userId: string }>,
+  res: Response,
+): Promise<void> => {
   const { userId } = req.params;
 
   const { role } = req.body;
@@ -139,7 +162,7 @@ const updateUserRole = async (req: Request<{ userId: string }>, res: Response): 
   if (!isValidObjectId(userId)) {
     res.status(400).json({
       status: "failed",
-      error: "Invalid user ID"
+      error: "Invalid user ID",
     });
     return;
   }
@@ -173,14 +196,14 @@ const updateUserRole = async (req: Request<{ userId: string }>, res: Response): 
       error: "Internal server error, failed to update role",
     });
   }
-}
+};
 
 const createAdmin = async (req: Request, res: Response): Promise<void> => {
   const userId = req.user?._id;
 
   const { firstName, lastName, email, password, role } = req.body;
 
-  if(!firstName || !lastName || !email || !password || !role) {
+  if (!firstName || !lastName || !email || !password || !role) {
     res.status(400).json({
       status: "failed",
       error: "All fields are required",
