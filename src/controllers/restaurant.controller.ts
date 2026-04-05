@@ -1,30 +1,37 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
+import z from "zod";
 
 import Restaurant from "../models/restaurant.model";
+import {
+  CreateRestaurantInput,
+  createRestaurantSchema,
+  MenuItemInput,
+  menuItemSchema,
+  removeDishFromMenuParamsSchema,
+  UpdateRestaurantInput,
+  updateRestaurantSchema,
+} from "../validators/restaurant.validators";
 
 const isValidObjectId = (id: string): boolean => {
   return mongoose.Types.ObjectId.isValid(id);
 };
 
-const createRestaurant = async (req: Request, res: Response): Promise<void> => {
-  const { name, cuisine, address, city, rating, menu, averageRating } =
-    req.body;
-
-  if (
-    !name ||
-    !cuisine ||
-    !address ||
-    !city ||
-    !rating ||
-    !menu ||
-    !averageRating
-  ) {
+const createRestaurant = async (
+  req: Request<CreateRestaurantInput>,
+  res: Response,
+): Promise<void> => {
+  const parsed = createRestaurantSchema.safeParse(req.body);
+  if (!parsed.success) {
     res.status(400).json({
-      message: "All fields are required",
+      message: parsed.error.issues[0]?.message || "Validation failed",
+      errors: z.flattenError(parsed.error).fieldErrors,
     });
     return;
   }
+
+  const { name, cuisine, address, city, rating, menu, averageRating } =
+    parsed.data;
 
   try {
     const existingRestaurant = await Restaurant.findOne({ name });
@@ -124,11 +131,10 @@ const readRestaurantsByCuisine = async (
 };
 
 const updateRestaurant = async (
-  req: Request<{ restaurantId: string }, {}, {}>,
+  req: Request<{ restaurantId: string }, {}, UpdateRestaurantInput>,
   res: Response,
 ): Promise<void> => {
   const { restaurantId } = req.params;
-  const updateData = req.body;
 
   if (!isValidObjectId(restaurantId)) {
     res.status(400).json({
@@ -138,10 +144,22 @@ const updateRestaurant = async (
     return;
   }
 
+  const parsed = updateRestaurantSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      message: parsed.error.issues[0]?.message || "Validation failed",
+      errors: z.flattenError(parsed.error).fieldErrors,
+    });
+    return;
+  }
+
+  const { name, cuisine, address, city, rating, menu, averageRating } =
+    parsed.data;
+
   try {
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
       restaurantId,
-      updateData,
+      { name, cuisine, address, city, rating, menu, averageRating },
       {
         returnDocument: "after",
         runValidators: true,
@@ -218,16 +236,25 @@ const searchRestaurantsByLocation = async (
     location = location[0]; // Take the first value if multiple location parameters are provided
   }
 
-  if (!location) {
+  // Validate location
+  const locationSchema = z
+    .string()
+    .trim()
+    .min(1, "Location is required in query");
+  const parsedLocation = locationSchema.safeParse(location);
+  if (!parsedLocation.success) {
     res.status(400).json({
-      status: "failed",
-      message: "Location query parameter is required",
+      status: "fail",
+      message:
+        parsedLocation.error.issues[0]?.message || "Location is required !",
     });
     return;
   }
 
   try {
-    const restaurants = await Restaurant.find({ city: location });
+    const restaurants = await Restaurant.find({
+      city: parsedLocation.data,
+    }).select("-__v");
     if (restaurants.length === 0) {
       res.status(404).json({
         status: "failed",
@@ -289,11 +316,10 @@ const filterRestaurantsByRating = async (
 };
 
 const addDishToMenu = async (
-  req: Request<{ restaurantId: string }, {}, {}>,
+  req: Request<{ restaurantId: string }, {}, MenuItemInput>,
   res: Response,
 ) => {
   const { restaurantId } = req.params;
-  const dishData = req.body;
 
   if (!isValidObjectId(restaurantId)) {
     res.status(400).json({
@@ -302,12 +328,26 @@ const addDishToMenu = async (
     });
     return;
   }
+
+  const parsed = menuItemSchema.safeParse(req.body);
+
+  if (!parsed.success) {
+    res.status(400).json({
+      status: "failed",
+      message: parsed.error.issues[0]?.message || "Validation failed",
+      errors: z.flattenError(parsed.error).fieldErrors,
+    });
+    return;
+  }
+
+  const { name, description, price, isVeg } = parsed.data;
+
   try {
     const updatedRestaurant = await Restaurant.findByIdAndUpdate(
       restaurantId,
       {
         $push: {
-          menu: dishData,
+          menu: { name, description, price, isVeg },
         },
       },
       { returnDocument: "after", runValidators: true },
@@ -349,15 +389,19 @@ const removeDishFromMenu = async (
     return;
   }
 
-  if (!req.params.dishName) {
+  const parsedParams = removeDishFromMenuParamsSchema.safeParse(
+    req.params.dishName,
+  );
+
+  if (!parsedParams.success) {
     res.status(400).json({
       status: "failed",
-      message: "Dish name is required in the URL parameters",
+      message: parsedParams.error.issues[0]?.message || "Invalid parameters",
     });
     return;
   }
 
-  const dishName = req.params.dishName;
+  const { dishName } = parsedParams.data;
 
   try {
     const existingRestaurant = await Restaurant.findById(restaurantId);

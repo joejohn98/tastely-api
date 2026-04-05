@@ -1,6 +1,6 @@
 import z from "zod";
 
-export const menuItemSchema = z.object({
+const menuItemSchema = z.object({
   name: z.string().trim().min(1, "Dish name is required"),
   price: z.coerce
     .number("Dish price must be a number")
@@ -49,6 +49,11 @@ const updateRestaurantSchema = z.object({
     .optional(),
 });
 
+export const removeDishFromMenuParamsSchema = z.object({
+  dishName: z.string().trim().min(1, "Dish name is required in path"),
+});
+
 export type CreateRestaurantInput = z.infer<typeof createRestaurantSchema>;
 export type UpdateRestaurantInput = z.infer<typeof updateRestaurantSchema>;
-export { createRestaurantSchema, updateRestaurantSchema };
+export type MenuItemInput = z.infer<typeof menuItemSchema>;
+export { createRestaurantSchema, updateRestaurantSchema, menuItemSchema };
