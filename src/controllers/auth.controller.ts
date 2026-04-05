@@ -10,6 +10,8 @@ import {
   loginUserSchema,
   RegisterInput,
   registerUserSchema,
+  UpdateUserRoleInput,
+  updateUserRoleSchema,
 } from "../validators/auth.validators";
 
 const isValidObjectId = (id: string): boolean => {
@@ -87,7 +89,7 @@ const login = async (
   }
 
   const { email, password } = validate.data;
-  
+
   try {
     const existingUser = await User.findOne({ email }).select("+password");
 
@@ -152,12 +154,10 @@ const logout = (req: Request, res: Response): void => {
 };
 
 const updateUserRole = async (
-  req: Request<{ userId: string }>,
+  req: Request<{ userId: string }, {}, UpdateUserRoleInput>,
   res: Response,
 ): Promise<void> => {
   const { userId } = req.params;
-
-  const { role } = req.body;
 
   if (!isValidObjectId(userId)) {
     res.status(400).json({
@@ -166,6 +166,18 @@ const updateUserRole = async (
     });
     return;
   }
+
+  const parsed = updateUserRoleSchema.safeParse(req.body);
+
+    if (!parsed.success) {
+    res.status(400).json({
+      status: "failed",
+      error: parsed.error.issues[0]?.message || "Invalid input",
+      errors: z.flattenError(parsed.error).fieldErrors,
+    });
+    return;
+  }
+  const { role } = parsed.data;
 
   try {
     const updatedUser = await User.findByIdAndUpdate(

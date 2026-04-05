@@ -16,6 +16,11 @@ const loginUserSchema = z.object({
   password: z.string().min(6, "Password must be at least 6 characters"),
 });
 
+const updateUserRoleSchema = z.object({
+  role: z.enum(["customer", "admin"]),
+});
+
 export type RegisterInput = z.infer<typeof registerUserSchema>;
 export type LoginInput = z.infer<typeof loginUserSchema>;
-export { registerUserSchema, loginUserSchema };
+export type UpdateUserRoleInput = z.infer<typeof updateUserRoleSchema>;
+export { registerUserSchema, loginUserSchema, updateUserRoleSchema };
