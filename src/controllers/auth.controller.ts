@@ -175,4 +175,74 @@ const updateUserRole = async (req: Request<{ userId: string }>, res: Response): 
   }
 }
 
-export { register, login, logout, updateUserRole };
+const createAdmin = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?._id;
+
+  const { firstName, lastName, email, password, role } = req.body;
+
+  if(!firstName || !lastName || !email || !password || !role) {
+    res.status(400).json({
+      status: "failed",
+      error: "All fields are required",
+    });
+    return;
+  }
+
+  if (!userId) {
+    res.status(401).json({
+      status: "failed",
+      error: "Unauthorized, user not authenticated",
+    });
+    return;
+  }
+
+  if (!isValidObjectId(userId.toString())) {
+    res.status(400).json({
+      status: "failed",
+      error: "Invalid user ID",
+    });
+    return;
+  }
+
+  try {
+    const existingUser = await User.findOne({ email });
+
+    if (existingUser) {
+      res.status(400).json({
+        status: "failed",
+        error: "User with this email already exists",
+      });
+      return;
+    }
+
+    const newAdmin = new User({
+      firstName,
+      lastName,
+      email,
+      password,
+      role,
+    });
+    const token = generateToken(newAdmin._id.toString(), res);
+    await newAdmin.save();
+
+    res.status(201).json({
+      status: "success",
+      message: "Admin user created successfully",
+      user: {
+        _id: newAdmin._id,
+        firstName: newAdmin.firstName,
+        lastName: newAdmin.lastName,
+        email: newAdmin.email,
+        role: newAdmin.role,
+      },
+    });
+  } catch (error) {
+    console.error("Error creating admin user", error);
+    res.status(500).json({
+      status: "failed",
+      error: "Internal server error, failed to create admin user",
+    });
+  }
+};
+
+export { register, login, logout, updateUserRole, createAdmin };
