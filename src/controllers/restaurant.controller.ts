@@ -20,7 +20,7 @@ const isValidObjectId = (id: string): boolean => {
 };
 
 const createRestaurant = async (
-  req: Request<CreateRestaurantInput>,
+  req: Request<{}, {}, CreateRestaurantInput>,
   res: Response,
 ): Promise<void> => {
   const parsed = createRestaurantSchema.safeParse(req.body);

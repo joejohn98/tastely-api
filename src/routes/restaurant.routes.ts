@@ -11,9 +11,14 @@ import {
   updateRestaurant,
 } from "../controllers/restaurant.controller";
 
+import verify from "../middleware/verify.middleware";
+import authorizeRoles from "../middleware/authorize.middleware";
+
+
 const router = Router();
 
-router.post("/", createRestaurant);
+router.post("/", verify,
+  authorizeRoles("admin"), createRestaurant);
 
 router.get("/", readAllRestaurants);
 
@@ -23,9 +28,10 @@ router.get("/cuisine/:cuisineType", readRestaurantsByCuisine);
 
 router.get("/rating/:rating", filterRestaurantsByRating);
 
-router.put("/:restaurantId", updateRestaurant);
+router.put("/:restaurantId", verify, authorizeRoles("admin"), updateRestaurant);
 
-router.delete("/:restaurantId", deleteRestaurant);
+router.delete("/:restaurantId", verify,
+  authorizeRoles("admin"), deleteRestaurant);
 
 router.post("/:restaurantId/menu", addDishToMenu);
 
