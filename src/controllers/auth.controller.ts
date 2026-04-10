@@ -6,6 +6,8 @@ import bcrypt from "bcryptjs";
 import User from "../models/user.model";
 import generateToken from "../utils/generateToken";
 import {
+  CreateAdminUserInput,
+  createAdminUserSchema,
   LoginInput,
   loginUserSchema,
   RegisterInput,
@@ -210,18 +212,9 @@ const updateUserRole = async (
   }
 };
 
-const createAdmin = async (req: Request, res: Response): Promise<void> => {
+const createAdmin = async (req: Request<{}, {}, CreateAdminUserInput>, res: Response): Promise<void> => {
   const userId = req.user?._id;
 
-  const { firstName, lastName, email, password, role } = req.body;
-
-  if (!firstName || !lastName || !email || !password || !role) {
-    res.status(400).json({
-      status: "failed",
-      error: "All fields are required",
-    });
-    return;
-  }
 
   if (!userId) {
     res.status(401).json({
@@ -238,6 +231,18 @@ const createAdmin = async (req: Request, res: Response): Promise<void> => {
     });
     return;
   }
+
+  const parsed = createAdminUserSchema.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({
+      status: "failed",
+      error: parsed.error.issues[0]?.message || "Validation failed",
+      errors: z.flattenError(parsed.error).fieldErrors,
+    });
+    return;
+  }
+
+  const { firstName, lastName, email, password, role } = parsed.data;
 
   try {
     const existingUser = await User.findOne({ email });
