@@ -1,5 +1,6 @@
 import express from 'express';
 import verify from '../middleware/verify.middleware';
+import { deleteProfile, getProfile, updateProfile } from '../controllers/user.controller';
 
 
 const router = express.Router();

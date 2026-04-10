@@ -1,12 +1,14 @@
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import z from "zod";
 
 import User from "../models/user.model";
 import {
   updateProfileInput,
   updateProfileSchema,
 } from "../validators/user.validators";
+import Restaurant from "../models/restaurant.model";
 
 const isValidObjectId = (id: string): boolean => {
   return mongoose.Types.ObjectId.isValid(id);
@@ -72,7 +74,7 @@ const updateProfile = async (
   }
 
   if (!isValidObjectId(userId)) {
-    rse.status(401).json({
+    res.status(401).json({
       status: "failed",
       message: "Invalid user ID",
     });
@@ -146,4 +148,59 @@ const updateProfile = async (
   }
 };
 
-export { getProfile, updateProfile };
+const deleteProfile = async (req: Request, res: Response): Promise<void> => {
+  const userId = req.user?._id.toString();
+
+  if (!userId) {
+    res.status(401).json({
+      status: "failed",
+      message: "Unauthorized",
+    });
+    return;
+  }
+
+  if (!isValidObjectId(userId)) {
+    res.status(400).json({
+      status: "failed",
+      message: "Invalid user ID",
+    });
+    return;
+  }
+
+  try {
+    const objectUserId = new mongoose.Types.ObjectId(userId);
+    const user = await User.findByIdAndDelete(objectUserId).select("-__v");
+    if (!user) {
+      res.status(404).json({
+        status: "failed",
+        message: "User not found",
+      });
+      return;
+    }
+    
+    // Delete the reviews and ratings made by the user
+    await Restaurant.updateMany(
+      { "reviews.userId": objectUserId },
+      { $pull: { reviews: { userId: objectUserId } } },
+    );
+
+    res.clearCookie("token", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+    });
+
+    res.status(200).json({
+      status: "success",
+      message: "Account and associated data deleted successfully",
+    });
+  } catch (error) {
+    console.error("Error deleting user profile:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Internal server error, failed to delete profile",
+    });
+  }
+};
+
+export { getProfile, updateProfile, deleteProfile };
