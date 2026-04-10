@@ -636,6 +636,59 @@ const getUserReviewsForRestaurant = async (
   }
 }
 
+const getUserReviewsForAllRestaurants = async (
+  req: Request,
+  res: Response,
+) => {
+  const userId = req.user?._id;
+
+  if (!userId) {
+    res.status(401).json({
+      status: "failed",
+      message: "User not authenticated",
+    });
+    return;
+  }
+
+  try {
+    const restaurants = await Restaurant.find({
+      "reviews.userId": userId,
+    }).select("-__v");
+
+    if (restaurants.length === 0) {
+      res.status(404).json({
+        status: "failed",
+        message: "No reviews found for this user",
+      });
+      return;
+    }
+
+    const userReviews = restaurants.map((restaurant) => {
+      const review = restaurant.reviews.find(
+        (rev) => rev.userId?.toString() === userId?.toString(),
+      );
+      return {
+        restaurantId: restaurant._id,
+        restaurantName: restaurant.name,
+        rating: review?.rating,
+        reviewText: review?.reviewText,
+      };
+    });
+
+    res.status(200).json({
+      status: "success",
+      results: userReviews.length,
+      data: userReviews,
+    });
+  } catch (error) {
+    console.error("Error fetching user reviews for all restaurants:", error);
+    res.status(500).json({
+      status: "failed",
+      message: "Failed to fetch user reviews for all restaurants",
+    });
+  }
+}
+
 
 export {
   createRestaurant,
@@ -650,4 +703,5 @@ export {
   removeDishFromMenu,
   addRestaurantReviewAndRating,
   getUserReviewsForRestaurant,
+  getUserReviewsForAllRestaurants,
 };

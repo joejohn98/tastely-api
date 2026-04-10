@@ -26,8 +26,6 @@ const verify = async (
     token = req.cookies.token;
   }
 
-  console.log("Token extracted in middleware:", req.cookies?.token);
-
   if (!token) {
     res.status(401).json({
       status: "failed",

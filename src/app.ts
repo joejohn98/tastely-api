@@ -4,6 +4,7 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 
 import restaurantRoutes from "./routes/restaurant.routes";
+import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.routes";
 
 const app = express();
@@ -26,4 +27,6 @@ app.use("/api/restaurants", restaurantRoutes);
 // auth route
 app.use("/api/auth", authRoutes);
 
+// user route
+app.use("/api/users", userRoutes);
 export default app;

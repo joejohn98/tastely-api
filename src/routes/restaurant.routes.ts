@@ -12,6 +12,7 @@ import {
   addRestaurantReviewAndRating,
   getUserReviewsForRestaurant,
   readRestaurant,
+  getUserReviewsForAllRestaurants,
 } from "../controllers/restaurant.controller";
 
 import verify from "../middleware/verify.middleware";
@@ -27,6 +28,8 @@ router.get("/", readAllRestaurants);
 
 router.get("/search/", searchRestaurantsByLocation);
 
+router.get("/reviews/", verify, getUserReviewsForAllRestaurants);
+
 router.get("/cuisine/:cuisineType", readRestaurantsByCuisine);
 
 router.get("/rating/:rating", filterRestaurantsByRating);
@@ -40,6 +43,7 @@ router.delete("/:restaurantId", verify,
   router.post("/:restaurantId/review", verify, addRestaurantReviewAndRating);
   
   router.get("/:restaurantId/reviews", verify, getUserReviewsForRestaurant);
+
   
   router.post("/:restaurantId/menu", addDishToMenu);
   
