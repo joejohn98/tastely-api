@@ -68,6 +68,7 @@ const restaurantSchema = new mongoose.Schema(
         },
         reviewText: {
           type: String,
+          required: [true, "Review text is required"],
           trim: true,
           maxLength: [300, "Review cannot exceed 300 characters"],
         },
