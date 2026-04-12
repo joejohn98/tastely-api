@@ -71,6 +71,15 @@ const restaurantSchema = new mongoose.Schema(
           trim: true,
           maxLength: [300, "Review cannot exceed 300 characters"],
         },
+        sentiment: {
+          type: String,
+          enum: ["positive", "neutral", "negative"],
+          default: "undefined",
+        },
+        themes: {
+          type: [String],
+          default: [],
+        },
       },
     ],
   },
