@@ -7,13 +7,12 @@
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "commonjs",
-    "target": "esnext",
+    "target": "es2020",
     "moduleResolution": "node",
     // For nodejs:
     "lib": ["esnext"],
     "types": ["node"],
-    "ignoreDeprecations": "6.0",
+    // "ignoreDeprecations": "6.0",
 
     // Other Outputs
     "sourceMap": true,
