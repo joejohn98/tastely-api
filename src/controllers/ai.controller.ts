@@ -31,6 +31,15 @@ const getAIReviewSummary = async (
     res.status(200).json({ status: "success", summary });
   } catch (err) {
     console.error("Error generating review summary:", err);
+
+    if ((err as any)?.status === 429) {
+      res.status(429).json({
+        status: "failed",
+        message: "AI service rate limit exceeded. Please try again later.",
+      });
+      return;
+    }
+
     res
       .status(500)
       .json({ status: "failed", message: "Failed to generate summary" });

@@ -527,7 +527,7 @@ const addRestaurantReviewAndRating = async (
   }
   const { rating, reviewText } = parsed.data;
 
-  let sentiment: string | undefined;
+  let sentiment: "positive" | "neutral" | "negative" | undefined;
   let themes: string[] | undefined;
 
   try {
@@ -539,7 +539,8 @@ const addRestaurantReviewAndRating = async (
   }
 
   try {
-    const restaurant = await Restaurant.findById(restaurantId);
+    const restaurant = await Restaurant.findById(restaurantId)
+      .populate("reviews.userId", "firstName email");
 
     if (!restaurant) {
       res.status(404).json({
@@ -560,11 +561,13 @@ const addRestaurantReviewAndRating = async (
       if (existingReview) {
         existingReview.rating = rating;
         existingReview.reviewText = reviewText;
+        if (sentiment) existingReview.sentiment = sentiment;
+        if (themes) existingReview.themes = themes;
       }
     } else {
       // Add new review
       restaurant.reviews.push({
-        userId: userId!,
+        userId: userId,
         rating,
         reviewText,
         sentiment,

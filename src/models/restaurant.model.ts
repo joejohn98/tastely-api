@@ -75,7 +75,7 @@ const restaurantSchema = new mongoose.Schema(
         sentiment: {
           type: String,
           enum: ["positive", "neutral", "negative"],
-          default: "undefined",
+          default: "neutral",
         },
         themes: {
           type: [String],
