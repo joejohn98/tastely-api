@@ -17,6 +17,7 @@ import {
   UpdateRestaurantInput,
   updateRestaurantSchema,
 } from "../validators/restaurant.validators";
+import { analyzeSentiment } from "../services/ai.services";
 
 const isValidObjectId = (id: string): boolean => {
   return mongoose.Types.ObjectId.isValid(id);
@@ -74,9 +75,8 @@ const readRestaurant = async (
   req: Request<{ name: string }>,
   res: Response,
 ): Promise<void> => {
-
   const parsedParams = restaurantNameParamSchema.safeParse(req.params);
-  
+
   if (!parsedParams.success) {
     res.status(400).json({
       status: "failed",
@@ -143,7 +143,6 @@ const readRestaurantsByCuisine = async (
   req: Request<{ cuisineType: string }, {}, {}>,
   res: Response,
 ): Promise<void> => {
-
   const parsedParams = cuisineTypeParamSchema.safeParse(req.params);
 
   if (!parsedParams.success) {
@@ -329,8 +328,7 @@ const filterRestaurantsByRating = async (
   req: Request<{ rating: string }>,
   res: Response,
 ) => {
-  
- const parsed = ratingParamSchema.safeParse(req.params);
+  const parsed = ratingParamSchema.safeParse(req.params);
 
   if (!parsed.success) {
     res.status(400).json({
@@ -521,13 +519,24 @@ const addRestaurantReviewAndRating = async (
 
   if (!parsed.success) {
     res.status(400).json({
-      status: "failed", 
+      status: "failed",
       message: parsed.error.issues[0]?.message || "Validation failed",
       errors: z.flattenError(parsed.error).fieldErrors,
     });
     return;
   }
   const { rating, reviewText } = parsed.data;
+
+  let sentiment: string | undefined;
+  let themes: string[] | undefined;
+
+  try {
+    const analysisResult = await analyzeSentiment(reviewText);
+    sentiment = analysisResult.sentiment;
+    themes = analysisResult.themes;
+  } catch (error) {
+    console.error("AI sentiment analysis error:", error);
+  }
 
   try {
     const restaurant = await Restaurant.findById(restaurantId);
@@ -558,6 +567,8 @@ const addRestaurantReviewAndRating = async (
         userId: userId!,
         rating,
         reviewText,
+        sentiment,
+        themes,
       });
     }
     // Calculate and update the average rating
@@ -583,7 +594,7 @@ const addRestaurantReviewAndRating = async (
       message: "Failed to add review and rating",
     });
   }
-}
+};
 
 const getUserReviewsForRestaurant = async (
   req: Request<{ restaurantId: string }>,
@@ -634,12 +645,9 @@ const getUserReviewsForRestaurant = async (
       message: "Failed to fetch user review for restaurant",
     });
   }
-}
+};
 
-const getUserReviewsForAllRestaurants = async (
-  req: Request,
-  res: Response,
-) => {
+const getUserReviewsForAllRestaurants = async (req: Request, res: Response) => {
   const userId = req.user?._id;
 
   if (!userId) {
@@ -687,8 +695,7 @@ const getUserReviewsForAllRestaurants = async (
       message: "Failed to fetch user reviews for all restaurants",
     });
   }
-}
-
+};
 
 export {
   createRestaurant,
