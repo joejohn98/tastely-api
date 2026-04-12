@@ -6,6 +6,7 @@ import cookieParser from "cookie-parser";
 import restaurantRoutes from "./routes/restaurant.routes";
 import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.routes";
+import aiRoutes from "./routes/ai.routes";
 
 const app = express();
 
@@ -23,6 +24,7 @@ app.get("/", (req: Request, res: Response) => {
 
 // restaurant route
 app.use("/api/restaurants", restaurantRoutes);
+app.use("/api/restaurants", aiRoutes); // AI route
 
 // auth route
 app.use("/api/auth", authRoutes);
