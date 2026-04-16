@@ -1,4 +1,4 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
@@ -31,4 +31,24 @@ app.use("/api/auth", authRoutes);
 
 // user route
 app.use("/api/users", userRoutes);
+
+// Global error handler middleware
+app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
+  console.error(err.stack);
+  res.status(500).json({
+    message: "Something broke!",
+    error: err.message,
+  });
+});
+
+process.on("unhandledRejection", (reason: any, promise: Promise<any>) => {
+  console.log("Unhandled Rejection at:", promise, "reason:", reason);
+  process.exit(1);
+});
+
+process.on("uncaughtException", (err: Error) => {
+  console.log("Uncaught Exception:", err);
+  process.exit(1);
+});
+
 export default app;
