@@ -1,5 +1,5 @@
 {
-  "name": "tastely-api",
+  "name": "tastelytics-api",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
@@ -13,16 +13,16 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/joejohn98/tastely-api.git"
+    "url": "git+https://github.com/joejohn98/tastelytics-api.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "bugs": {
-    "url": "https://github.com/joejohn98/tastely-api/issues"
+    "url": "https://github.com/joejohn98/tastelytics-api/issues"
   },
-  "homepage": "https://github.com/joejohn98/tastely-api#readme",
+  "homepage": "https://github.com/joejohn98/tastelytics-api#readme",
   "dependencies": {
     "@google/genai": "^1.49.0",
     "bcryptjs": "^3.0.3",

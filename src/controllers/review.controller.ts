@@ -49,7 +49,7 @@ const addRestaurantReviewAndRating = async (
   try {
     const restaurant = await Restaurant.findById(restaurantId).populate(
       "reviews.userId",
-      "firstName email",
+      "email",
     );
 
     if (!restaurant) {
@@ -183,7 +183,7 @@ const getUserReviewsForAllRestaurants = async (req: Request, res: Response) => {
       });
       return;
     }
-   // Map through the restaurants and extract the user's review for each restaurant
+    // Map through the restaurants and extract the user's review for each restaurant
     const userReviews = restaurants.map((restaurant) => {
       const review = restaurant.reviews.find(
         (rev) => rev.userId?.toString() === userId?.toString(),

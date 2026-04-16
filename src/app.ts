@@ -18,7 +18,7 @@ app.use(cookieParser());
 
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
-    message: "Welcome to the Tastely API",
+    message: "Welcome to the Tastelytics API",
   });
 });
 
