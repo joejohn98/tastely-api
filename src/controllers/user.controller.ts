@@ -1,6 +1,6 @@
 import { Request, Response } from "express";
-import mongoose from "mongoose";
 import bcrypt from "bcryptjs";
+import mongoose from "mongoose";
 import z from "zod";
 
 import User from "../models/user.model";
@@ -9,10 +9,7 @@ import {
   updateProfileSchema,
 } from "../validators/user.validators";
 import Restaurant from "../models/restaurant.model";
-
-const isValidObjectId = (id: string): boolean => {
-  return mongoose.Types.ObjectId.isValid(id);
-};
+import { isValidObjectId } from "../utils/validation";
 
 const getProfile = async (req: Request, res: Response): Promise<void> => {
   try {
@@ -177,7 +174,7 @@ const deleteProfile = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-    
+
     // Delete the reviews and ratings made by the user
     await Restaurant.updateMany(
       { "reviews.userId": objectUserId },

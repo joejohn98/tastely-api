@@ -1,5 +1,4 @@
 import { Request, Response } from "express";
-import mongoose from "mongoose";
 import z from "zod";
 
 import bcrypt from "bcryptjs";
@@ -15,10 +14,8 @@ import {
   UpdateUserRoleInput,
   updateUserRoleSchema,
 } from "../validators/auth.validators";
+import { isValidObjectId } from "../utils/validation";
 
-const isValidObjectId = (id: string): boolean => {
-  return mongoose.Types.ObjectId.isValid(id);
-};
 
 const register = async (
   req: Request<RegisterInput>,
