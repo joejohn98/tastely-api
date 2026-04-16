@@ -1,8 +1,11 @@
 # Tastelytics API
 
-[![Build Status](https://img.shields.io/travis/com/joejohn98/tastelytics-api.svg?style=flat-square)](https://travis-ci.com/joejohn98/tastelytics-api)
-[![NPM Version](https://img.shields.io/npm/v/tastelytics-api.svg?style=flat-square)](https://www.npmjs.com/package/tastelytics-api)
-[![License](https://img.shields.io/npm/l/tastelytics-api.svg?style=flat-square)](https://github.com/joejohn98/tastelytics-api/blob/main/LICENSE)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.4-blue.svg?style=flat-square)](https://www.typescriptlang.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20+-green.svg?style=flat-square)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-5.x-lightgrey.svg?style=flat-square)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-9.3-green.svg?style=flat-square)](https://www.mongodb.com/)
+[![License: ISC](https://img.shields.io/badge/License-ISC-blue.svg?style=flat-square)](https://opensource.org/licenses/ISC)
+[![Project Status](https://img.shields.io/badge/Status-Active-brightgreen.svg?style=flat-square)](https://github.com/joejohn98/tastelytics-api)
 
 ---
 
