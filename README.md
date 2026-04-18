@@ -9,7 +9,7 @@
 
 ---
 
-A comprehensive restaurant review and analytics API built with Node.js, Express, TypeScript, and MongoDB. Features AI-powered review analysis using Google's Gemini API.
+A comprehensive restaurant management and analytics API built with Node.js, Express, TypeScript, and MongoDB. Features AI-powered review analysis using Google's Gemini API.
 
 ## Features
 

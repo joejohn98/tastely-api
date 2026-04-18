@@ -2,11 +2,13 @@ import express, { NextFunction, Request, Response } from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
+import swaggerUi from "swagger-ui-express";
 
 import restaurantRoutes from "./routes/restaurant.routes";
 import userRoutes from "./routes/user.routes";
 import authRoutes from "./routes/auth.routes";
 import aiRoutes from "./routes/ai.routes";
+import { swaggerSpec } from "./config/swagger";
 
 const app = express();
 
@@ -16,11 +18,29 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// ── Swagger UI ──────────────────────────────────────────────────────────────
+// Available at: http://localhost:4000/api-docs
+app.use(
+  "/api-docs",
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpec, {
+    customSiteTitle: "Tastelytics API Docs",
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      filter: true, 
+      tryItOutEnabled: true,
+    },
+  }),
+);
+
 app.get("/", (req: Request, res: Response) => {
   res.status(200).json({
     message: "Welcome to the Tastelytics API",
+    docs: "/api-docs",
   });
 });
+
 
 // restaurant route
 app.use("/api/restaurants", restaurantRoutes);

@@ -7,7 +7,7 @@ const options: swaggerJsdoc.Options = {
       title: "Tastelytics API",
       version: "1.0.0",
       description: `
-A comprehensive restaurant review and analytics API built with **Express 5**, **TypeScript**, and **MongoDB**.
+A comprehensive restaurant management and analytics API built with **Express 5**, **TypeScript**, and **MongoDB**.
 Features AI-powered review analysis using **Google Gemini API**.
 
 ## Features
@@ -34,11 +34,11 @@ Two methods are supported:
     },
     servers: [
       {
-        url: "http://localhost:3000",
+        url: "http://localhost:4000",
         description: "Development server",
       },
       {
-        url: "deployed-url.railway.app",
+        url: "",
         description: "Production server",
       },
     ],
