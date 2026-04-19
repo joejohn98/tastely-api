@@ -40,6 +40,14 @@ const getAIReviewSummary = async (
       return;
     }
 
+    if((err as any)?.status === 503) {
+      res.status(503).json({
+        status: "failed",
+        message: "This model is currently experiencing high demand. Please try again later.",
+      });
+      return;
+    }
+
     res
       .status(500)
       .json({ status: "failed", message: "Failed to generate summary" });
