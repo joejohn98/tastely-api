@@ -38,7 +38,7 @@ Two methods are supported:
         description: "Development server",
       },
       {
-        url: "",
+        url: "https://tastelytics-api.onrender.com",
         description: "Production server",
       },
     ],

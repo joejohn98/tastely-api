@@ -1024,7 +1024,7 @@ router.delete("/:restaurantId/menu/:dishName", removeDishFromMenu);
 
 /**
  * @swagger
- * /api/restaurants/by-name/{name}:
+ * /api/restaurants/{name}:
  *   get:
  *     summary: Get a restaurant by name (public)
  *     description: >
