@@ -1,0 +1,28 @@
+services:
+  server:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    ports:
+      - "4000:4000"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    env_file: ./.env.local # All environment variables are now loaded from this file
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  db:
+    image: mongo:7.0
+    ports:
+      - "27017:27017"
+    restart: always
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=roottastely
+      - MONGO_INITDB_ROOT_PASSWORD=mytastelypassword
+    volumes:
+      - mongo-data:/data/db
+
+volumes:
+  mongo-data:
